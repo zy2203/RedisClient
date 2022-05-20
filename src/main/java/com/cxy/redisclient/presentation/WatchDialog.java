@@ -1,12 +1,8 @@
 package com.cxy.redisclient.presentation;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-
-import sun.misc.BASE64Decoder;
-
+import com.cxy.redisclient.integration.I18nFile;
+import com.cxy.redisclient.presentation.component.RedisClientDialog;
+import com.google.gson.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
@@ -20,28 +16,25 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 
-import com.cxy.redisclient.integration.I18nFile;
-import com.cxy.redisclient.presentation.component.RedisClientDialog;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Base64;
 
 public class WatchDialog extends RedisClientDialog {
-	private String value;
+	private final String value;
+
 	private int currentTextType = 0;
+
 	private int currentImageType = -1;
+
 	private Text text;
+
 	private Label label;
+
 	private boolean currentText = true;
 
 	public WatchDialog(Shell parent, Image image, String value) {
@@ -67,14 +60,15 @@ public class WatchDialog extends RedisClientDialog {
 		btnRadioButton.setSelection(true);
 		btnRadioButton.setText(RedisClient.i18nFile.getText(I18nFile.TEXT));
 		final Combo textType = new Combo(grpValueType, SWT.DROP_DOWN | SWT.READ_ONLY);
-		textType.setItems(new String[] { RedisClient.i18nFile.getText(I18nFile.PLAINTEXT), RedisClient.i18nFile.getText(I18nFile.JSON), RedisClient.i18nFile.getText(I18nFile.XML) });
+		textType.setItems(new String[] {RedisClient.i18nFile.getText(I18nFile.PLAINTEXT),
+				RedisClient.i18nFile.getText(I18nFile.JSON), RedisClient.i18nFile.getText(I18nFile.XML)});
 		textType.select(0);
 
 		Button btnRadioButton_1 = new Button(grpValueType, SWT.RADIO);
 		btnRadioButton_1.setText(RedisClient.i18nFile.getText(I18nFile.IMAGE));
 		final Combo imageType = new Combo(grpValueType, SWT.DROP_DOWN | SWT.READ_ONLY);
 		imageType.setEnabled(false);
-		imageType.setItems(new String[] { RedisClient.i18nFile.getText(I18nFile.BASE64IMAGE) });
+		imageType.setItems(new String[] {RedisClient.i18nFile.getText(I18nFile.BASE64IMAGE)});
 
 		final Group grpValue = new Group(composite, SWT.NONE);
 		grpValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -91,14 +85,14 @@ public class WatchDialog extends RedisClientDialog {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (!currentText) {
+				if(!currentText) {
 					imageType.setEnabled(false);
 					textType.setEnabled(true);
-					if (label != null && !label.isDisposed()) {
+					if(label != null && !label.isDisposed()) {
 						label.setVisible(false);
 						label.dispose();
 					}
-					text = new Text(grpValue, SWT.BORDER | SWT.V_SCROLL	| SWT.H_SCROLL | SWT.MULTI);
+					text = new Text(grpValue, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI);
 					text.setEditable(false);
 					text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 					text.setText(value);
@@ -111,10 +105,10 @@ public class WatchDialog extends RedisClientDialog {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (currentText) {
+				if(currentText) {
 					imageType.setEnabled(true);
 					textType.setEnabled(false);
-					if (text != null && !text.isDisposed()) {
+					if(text != null && !text.isDisposed()) {
 						text.setVisible(false);
 						text.dispose();
 					}
@@ -158,21 +152,15 @@ public class WatchDialog extends RedisClientDialog {
 
 	private void tranformImage(Combo imageType, Label label) {
 		int index = imageType.getSelectionIndex();
-		if (index == 0) {
-			BASE64Decoder decode = new BASE64Decoder();
-
+		if(index == 0) {
 			try {
-				byte[] b = decode.decodeBuffer(value);
+				byte[] b = Base64.getDecoder().decode(value);
 				ByteArrayInputStream bais = new ByteArrayInputStream(b);
 				Image img = new Image(shell.getDisplay(), bais);
 				label.setImage(img);
-				
-			} catch (SWTException e) {
+			}catch (SWTException e) {
 				imageType.select(currentImageType);
 				throw new RuntimeException(RedisClient.i18nFile.getText(I18nFile.IMAGEEXCEPTION));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 		shell.pack();
@@ -181,21 +169,20 @@ public class WatchDialog extends RedisClientDialog {
 
 	private void tranformText(final Combo textType, final Text text) {
 		int index = textType.getSelectionIndex();
-		if (index == 0) {
+		if(index == 0) {
 			text.setText(value);
-		} else if (index == 1) {
+		}else if(index == 1) {
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			JsonParser jp = new JsonParser();
 			try {
-				JsonElement je = jp.parse(value);
+				JsonElement je = JsonParser.parseString(value);
 				String prettyJsonString = gson.toJson(je);
 				text.setText(prettyJsonString);
-			} catch (JsonSyntaxException e) {
+			}catch (JsonSyntaxException e) {
 				textType.select(currentTextType);
 				throw new RuntimeException(RedisClient.i18nFile.getText(I18nFile.JSONEXCEPTION));
 			}
 
-		} else if (index == 2) {
+		}else if(index == 2) {
 			SAXReader reader = new SAXReader();
 
 			StringReader in = new StringReader(value);
@@ -213,14 +200,13 @@ public class WatchDialog extends RedisClientDialog {
 
 				writer.close();
 				text.setText(out.getBuffer().toString());
-			} catch (DocumentException e) {
+			}catch (DocumentException e) {
 				textType.select(currentTextType);
 				throw new RuntimeException(RedisClient.i18nFile.getText(I18nFile.XMLEXCEPTION));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			}catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 		shell.pack();
 		setMiddle();

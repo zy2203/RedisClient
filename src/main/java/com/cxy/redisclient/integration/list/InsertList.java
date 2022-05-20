@@ -1,17 +1,20 @@
 package com.cxy.redisclient.integration.list;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-
 import com.cxy.redisclient.domain.RedisVersion;
 import com.cxy.redisclient.integration.JedisCommand;
+import redis.clients.jedis.args.ListPosition;
 
 public class InsertList extends JedisCommand {
-	private int db;
-	private String key;
-	private boolean beforeAfter;
-	private String pivot;
-	private String value;
-	
+	private final int db;
+
+	private final String key;
+
+	private final boolean beforeAfter;
+
+	private final String pivot;
+
+	private final String value;
+
 	public InsertList(int id, int db, String key, boolean beforeAfter, String pivot, String value) {
 		super(id);
 		this.db = db;
@@ -24,7 +27,7 @@ public class InsertList extends JedisCommand {
 	@Override
 	protected void command() {
 		jedis.select(db);
-		jedis.linsert(key, beforeAfter?LIST_POSITION.BEFORE:LIST_POSITION.AFTER, pivot, value);
+		jedis.linsert(key, beforeAfter ? ListPosition.BEFORE : ListPosition.AFTER, pivot, value);
 	}
 
 	@Override

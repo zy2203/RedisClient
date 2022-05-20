@@ -44,7 +44,7 @@ This is a redis client GUI tool written based on Java SWT and Jedis. It's my obj
 3. Run it by double click redisclient-win32.x86.2.0.exe
 
 
-### If you have installed the JDK or JRE 5+ 
+### If you have installed the JDK or JRE 8+ 
 
 #### For 64 bit windows
  1. Download the runable jar file [redisclient-win32.x86_64.2.0.jar](https://github.com/caoxinyu/RedisClient/blob/windows/release/redisclient-win32.x86_64.2.0.jar?raw=true)
